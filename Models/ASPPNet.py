@@ -3,15 +3,17 @@ import os
 import skimage.io as io
 import skimage.transform as trans
 import numpy as np
-from keras.models import *
-from keras.layers import *
-from keras.optimizers import *
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler
-from keras import backend as keras
-import keras.backend as K
-from keras import optimizers
-from keras import activations
-from Metrics import *
+from tensorflow.keras.models import *
+from tensorflow.keras.layers import *
+from tensorflow.keras.optimizers import *
+from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
+from tensorflow.keras import backend as keras
+import tensorflow.keras.backend as K
+from tensorflow.keras import optimizers
+from tensorflow.keras import activations
+#-esta mal guiado?
+import utils.Metrics as Metrics
+#from Metrics import *
 
 def Dense_Block(inputs, filter_size):
     #BN=>RELU=>CONV=>DROPOUT
@@ -118,9 +120,11 @@ def asppnet(pretrained_weights = None, input_size = (256,256,1)):
     final = Conv2D(64, 1, activation = None, padding = 'same', kernel_initializer = 'he_normal')(db3)
     
     conv10 = Conv2D(1, 1, activation = 'sigmoid')(final)
-    model = Model(input = inputs, output = conv10)
-    dl = balanced_cross_entropy(0.8)
-    model.compile(optimizer = SGD(lr=5e-6, decay=1e-6, momentum=0.5, nesterov=True), loss = dl, metrics = ['accuracy', dice_score])
+    model = Model(inputs= inputs, outputs = conv10)
+    dl = Metrics.balanced_cross_entropy(0.8) #cambiado la referencia
+    opt = SGD(learning_rate=5e-6, decay=1e-6, momentum=0.5, nesterov=True)
+    model.compile(optimizer=opt , loss = dl, metrics = ['accuracy', Metrics.dice_score])
+    #model.compile(optimizer = SGD(lr=5e-6, decay=1e-6, momentum=0.5, nesterov=True), loss = dl, metrics = ['accuracy', dice_score]) #Original
     if(pretrained_weights):
     	model.load_weights(pretrained_weights)
 
